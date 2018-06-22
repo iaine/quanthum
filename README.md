@@ -3,6 +3,6 @@
 Scripts to support the analysis of the links 
 between texts
 
-#####Author
+##### Author
 
 Iain Emsley 
