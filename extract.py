@@ -28,7 +28,8 @@ for item in tree.findall(".//{http://www.tei-c.org/ns/1.0}persName[@type='standa
 
 # extract the variant names
 for item in tree.findall(".//{http://www.tei-c.org/ns/1.0}persName[@type='form']"):
-    variant_names.append(item.text)
+    if type(item.text) is str:
+        variant_names.append(item.text)
 
 
 
@@ -37,7 +38,14 @@ for item in tree.findall(".//{http://www.tei-c.org/ns/1.0}person[@{http://www.w3
     _tmp = item.attrib['{http://www.w3.org/XML/1998/namespace}id'].replace(fn+'-', '')
     ids.append(_tmp)
 
+print("standard")
+print(standard_names)
+print("form")
+print(variant_names)
+print("Ids")
+print(ids)
+
 f = open('characters.csv', 'a')
 writer = csv.writer(f)
-writer.writerow([fn,';'.join(standard_names), ';'.join(variant_names), ';'.join(ids)])
+writer.writerow([fn,';'.join(standard_names).encode('utf-8'), ';'.join(variant_names).encode('utf-8'), ';'.join(ids).encode('utf-8')])
 f.close()
