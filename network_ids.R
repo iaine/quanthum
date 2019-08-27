@@ -14,7 +14,8 @@ find_numbers <- function (dfA, dfB) {
 
 #todo: break this up into smaller functions
 find_relations <- function(fA) {
-  relations = data.frame(from=character(), to=character(), weight=numeric(), linktype=character(), stringsAsFactors = FALSE)
+  generation <- 30
+  relations = data.frame(from=character(), to=character(), weight=numeric(), linktype=character(), alpha = numeric(), stringsAsFactors = FALSE)
   for (i in (1:length(dat$Ids))) {
     for (j in (1:length(dat$Ids))) {
       # remove self referential links
@@ -23,25 +24,26 @@ find_relations <- function(fA) {
         #contentious. Henry4 and Richard2 born in same year but H4 dies after R2. 
         # How to handle?
         # Death constraint:  && dat$end[i] == dat$end[j]
-        if ((dat$start[i] - dat$start[j]) < 0) {
+        datediff <- (dat$start[i] - dat$start[j])
+        if (datediff < 0) {
           rels = find_numbers(dat$Ids[i], dat$Ids[j])
           if (rels > 0) {
-            newVertex <- data.frame(from=dat$Titles[i],to=dat$Titles[j],weight=rels, linktype="#00B050")
+            newVertex <- data.frame(from=dat$Titles[i],to=dat$Titles[j],weight=rels, linktype="#00B050", alpha=1 / datediff %% generation )
             relations <- rbind(relations, newVertex)
           }
         }
-        else if ((dat$start[i] - dat$start[j]) < 30 ) {
+        else if (datediff < generation ) {
         rels = find_numbers(dat$Ids[i], dat$Ids[j])
         if (rels > 0) {
-          newVertex <- data.frame(from=dat$Titles[i],to=dat$Titles[j],weight=rels, linktype="#FFC000")
+          newVertex <- data.frame(from=dat$Titles[i],to=dat$Titles[j],weight=rels, linktype="#FFC000", alpha=1)
           relations <- rbind(relations, newVertex)
         }
         }
-        else if ((dat$start[i] - dat$start[j]) >= 30 && (dat$start[i] - dat$start[j]) < 500) {
+        else if (datediff >= generation && datediff < 500) {
           # Cap of 150 years to limit 
           rels = find_numbers(dat$Ids[i], dat$Ids[j])
           if (rels > 0) {
-            newVertex <- data.frame(from=dat$Titles[i],to=dat$Titles[j],weight=rels, linktype="#C00000")
+            newVertex <- data.frame(from=dat$Titles[i],to=dat$Titles[j],weight=rels, linktype="#C00000", alpha= 1 / datediff %% generation)
             relations <- rbind(relations, newVertex)
           }
         }
@@ -57,7 +59,7 @@ plot_diagram <- function (df_relations , fname) {
   g <- graph.data.frame(df_relations, directed = TRUE)
   
   # Plot graph
-  plot(g, edge.width=E(g)$weight, edge.color=E(g)$linktype)
+  plot(g, edge.width=E(g)$weight, edge.color=E(g)$linktype, edge.alpha=E(g)$alpha)
   legend("topleft",
          status_levels,
          fill=status_colors
